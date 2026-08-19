@@ -1,4 +1,22 @@
 import os
+import requests
+import pandas as pd
+import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("TWELVE_DATA_API_KEY")
+
+if not API_KEY:
+    try:
+        API_KEY = st.secrets["TWELVE_DATA_API_KEY"]
+    except Exception:
+        API_KEY = None
+
+if not API_KEY:
+    raise RuntimeError("TWELVE_DATA_API_KEY missing")
+import os
 import time
 
 import requests
