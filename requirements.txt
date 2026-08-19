@@ -1,7 +1,7 @@
-MetaTrader5
+streamlit
 pandas
 numpy
-streamlit
 plotly
 ta
 python-dotenv
+requests
