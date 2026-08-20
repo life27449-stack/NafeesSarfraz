@@ -1,4 +1,5 @@
 import streamlit as st
+from supabase import create_client
 from scanner import scan
 from datetime import datetime
 import time
@@ -8,7 +9,113 @@ st.set_page_config(
     page_icon="🚀",
     layout="wide"
 )
+# ==================================================
+# SUPABASE AUTH
+# ==================================================
 
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
+)
+
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+
+# ==================================================
+# LOGIN / SIGN UP
+# ==================================================
+
+if st.session_state.user is None:
+
+    st.title("🚀 Nafees.Sarfraz BOT")
+
+    tab_login, tab_signup = st.tabs(
+        ["🔐 Login", "📝 Sign Up"]
+    )
+
+    with tab_login:
+
+        email = st.text_input(
+            "Email",
+            key="login_email"
+        )
+
+        password = st.text_input(
+            "Password",
+            type="password",
+            key="login_password"
+        )
+
+        if st.button(
+            "🔐 Login",
+            key="login_button"
+        ):
+
+            try:
+
+                response = supabase.auth.sign_in_with_password(
+                    {
+                        "email": email,
+                        "password": password
+                    }
+                )
+
+                st.session_state.user = response.user
+
+                st.success("Login successful!")
+                st.rerun()
+
+            except Exception as e:
+
+                st.error(
+                    f"Login failed: {e}"
+                )
+
+
+    with tab_signup:
+
+        new_email = st.text_input(
+            "Email",
+            key="signup_email"
+        )
+
+        new_password = st.text_input(
+            "Password",
+            type="password",
+            key="signup_password"
+        )
+
+        if st.button(
+            "📝 Create Account",
+            key="signup_button"
+        ):
+
+            try:
+
+                response = supabase.auth.sign_up(
+                    {
+                        "email": new_email,
+                        "password": new_password
+                    }
+                )
+
+                st.success(
+                    "Account created successfully! "
+                    "You can now login."
+                )
+
+            except Exception as e:
+
+                st.error(
+                    f"Sign Up failed: {e}"
+                )
+
+
+    st.stop()
 
 
 
@@ -88,6 +195,30 @@ st.title("🚀 Nafees.Sarfraz BOT")
 st.caption(
     "Signal-only mode — no automatic trades"
 )
+# ==================================================
+# LOGGED-IN USER + LOGOUT
+# ==================================================
+
+if st.session_state.user:
+
+    user_email = getattr(
+        st.session_state.user,
+        "email",
+        None
+    )
+
+    if user_email:
+        st.caption(f"👤 Logged in: {user_email}")
+
+    if st.button("🚪 Sign Out"):
+
+        try:
+            supabase.auth.sign_out()
+        except Exception:
+            pass
+
+        st.session_state.user = None
+        st.rerun()
 
 st.divider()
 
